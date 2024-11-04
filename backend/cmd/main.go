@@ -77,12 +77,12 @@ func main() {
 	// init di
 	repo := store.NewUserRepo(nil)
 	userUseCase := use_case.NewUserUseCase(repo, tracer)
-	userHandlerHttp := httphandler.NewUserHandler(userUseCase, tracer, meter)
 	wg := &sync.WaitGroup{}
 	// start http server
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
+		userHandlerHttp := httphandler.NewUserHandler(userUseCase, tracer, meter)
 		server := http_server.NewHttpServer(userHandlerHttp)
 		if err := server.Run(ctx, HttpServerAddr); err != nil {
 			log.Fatal(err)
