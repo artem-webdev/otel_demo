@@ -7,7 +7,7 @@ docker compose up -d
 
 http demo url http://127.0.0.1:7777/user/cool/
 
-grpc смотрите в файле ```./backend/pkg/api/grpc/user.proto```
+grpc - 127.0.0.1:50057, прото - ```./backend/pkg/api/grpc/user.proto```
 
 Prometheus UI - http://127.0.0.1:9090/
 
