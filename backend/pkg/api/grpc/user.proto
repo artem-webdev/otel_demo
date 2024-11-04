@@ -1,0 +1,20 @@
+syntax = "proto3";
+
+package user;
+
+option go_package = "./backend/internal/controller/grpc_ctrl/pb/user;userpb";
+
+import "google/protobuf/empty.proto";
+
+
+message UserResponseMessage {
+  string id = 1;
+  string first_name = 2;
+  string last_name = 3;
+  string email = 4;
+  uint32 age = 5;
+}
+
+service User {
+  rpc WhoIsCool(google.protobuf.Empty)  returns (UserResponseMessage);
+}

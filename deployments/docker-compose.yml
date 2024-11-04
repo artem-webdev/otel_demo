@@ -1,0 +1,65 @@
+name: "otel_demo"
+
+services:
+
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: prometheus
+    ports:
+      - "9090:9090"  # Порт для доступа к Prometheus UI
+    volumes:
+      - ./config/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+
+  jaeger:
+    image: jaegertracing/all-in-one:latest
+    container_name: jaeger
+    ports:
+      - "16686:16686"     # Jaeger UI
+      - "6831:6831/udp"   # Jaeger UDP
+      # https://github.com/open-telemetry/opentelemetry-java-examples/pull/489
+      #  - "4317"     # Jaeger gRPC for collector default port
+
+  otel-collector:
+    image: otel/opentelemetry-collector-contrib:latest
+    container_name: otel-collector
+    command: [ "--config=/etc/otel-collector-config.yaml" ]
+    volumes:
+      - ./config/otel-collector-config.yaml:/etc/otel-collector-config.yaml
+    ports:
+      - "4320:4320"   # OTLP gRPC
+      - "4319:4319"   # OTLP HTTP
+      - "8889:8889"
+    depends_on:
+      - jaeger
+      - prometheus
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    ports:
+      - "3007:3000"  # Порт для доступа к Grafana UI
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    volumes:
+      - grafana-data:/var/lib/grafana
+
+  service-demo:
+    build:
+      context: ../backend
+      dockerfile: ../deployments/build/Dockerfile
+    container_name: service-demo
+    ports:
+      - "7777:7777" # http port
+      - "50057:50057" # grpc port
+    depends_on:
+      - jaeger
+      - prometheus
+      - otel-collector
+      - grafana
+
+
+volumes:
+  grafana-data:
+    driver: local

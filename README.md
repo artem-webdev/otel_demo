@@ -1,0 +1,16 @@
+# Запуск
+
+```bash
+cd deployments
+docker compose up -d
+```
+
+http demo url http://127.0.0.1:7777/user/cool/
+
+grpc смотрите в файле ```./backend/pkg/api/grpc/user.proto```
+
+Prometheus UI - http://127.0.0.1:9090/
+
+jaeger UI -     http://127.0.0.1:16686/
+
+grafana UI -    http://127.0.0.1:3007/
