@@ -67,12 +67,12 @@ func metricInit(ctx context.Context) {
 }
 
 func main() {
-	ctx := context.Background()
+	ctxParent := context.Background()
 	// set tracer
-	tracerInit(ctx)
+	tracerInit(ctxParent)
 	tracer := otel_sdk.Tracer(TracerName)
 	// set metrics
-	metricInit(ctx)
+	metricInit(ctxParent)
 	meter := otel_sdk.Meter(MeterName)
 	// init di
 	repo := store.NewUserRepo(nil)
@@ -84,7 +84,7 @@ func main() {
 		defer wg.Done()
 		userHandlerHttp := httphandler.NewUserHandler(userUseCase, tracer, meter)
 		server := http_server.NewHttpServer(userHandlerHttp)
-		if err := server.Run(ctx, HttpServerAddr); err != nil {
+		if err := server.Run(ctxParent, HttpServerAddr); err != nil {
 			log.Fatal(err)
 		}
 	}()
