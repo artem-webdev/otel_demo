@@ -45,19 +45,19 @@ services:
     volumes:
       - grafana-data:/var/lib/grafana
 
-#  service-demo:
-#    build:
-#      context: ../backend
-#      dockerfile: ../deployments/build/Dockerfile
-#    container_name: service-demo
-#    ports:
-#      - "7777:7777" # http port
-#      - "50057:50057" # grpc port
-#    depends_on:
-#      - jaeger
-#      - prometheus
-#      - otel-collector
-#      - grafana
+  service-demo:
+    build:
+      context: ../backend
+      dockerfile: ../deployments/build/Dockerfile
+    container_name: service-demo
+    ports:
+      - "7777:7777" # http port
+      - "50057:50057" # grpc port
+    depends_on:
+      - jaeger
+      - prometheus
+      - otel-collector
+      - grafana
 
 
 volumes:

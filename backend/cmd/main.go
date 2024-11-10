@@ -22,13 +22,12 @@ import (
 )
 
 const (
-	HttpServerAddr = "0.0.0.0:7777"
-	GrpcServerAddr = "0.0.0.0:50057"
-	TracerName     = "otel-collector"
-	MeterName      = "otel-collector"
-	ServiceName    = "otel-demo-service"
-	//AddrGrpcCollector = "otel-collector:4320"
-	AddrGrpcCollector = "0.0.0.0:4320"
+	HttpServerAddr    = "0.0.0.0:7777"
+	GrpcServerAddr    = "0.0.0.0:50057"
+	TracerName        = "otel-collector"
+	MeterName         = "otel-collector"
+	ServiceName       = "otel-demo-service"
+	AddrGrpcCollector = "otel-collector:4320"
 )
 
 func tracerInit(ctx context.Context) {
