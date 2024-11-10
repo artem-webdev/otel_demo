@@ -14,8 +14,8 @@ import (
 	"google.golang.org/grpc/reflection"
 	"log"
 	"net"
+	"strings"
 	"sync"
-	"time"
 )
 
 const (
@@ -41,8 +41,10 @@ func tracerInit(ctx context.Context) {
 	go func() {
 		select {
 		case <-ctx.Done():
-			if err = shutdownTracerProvider(context.Background()); err != nil {
-				log.Printf("failed to shutdown shutdownTracerProvider: %s", err)
+			if err = shutdownTracerProvider(ctx); err != nil {
+				if !strings.Contains(err.Error(), "context") {
+					log.Printf("failed to shutdown shutdownMeterProvider: %s", err)
+				}
 			}
 		}
 	}()
@@ -61,16 +63,17 @@ func metricInit(ctx context.Context) {
 	go func() {
 		select {
 		case <-ctx.Done():
-			if err = shutdownMeterProvider(context.Background()); err != nil {
-				log.Printf("failed to shutdown shutdownMeterProvider: %s", err)
+			if err = shutdownMeterProvider(ctx); err != nil {
+				if !strings.Contains(err.Error(), "context") {
+					log.Printf("failed to shutdown shutdownMeterProvider: %s", err)
+				}
 			}
 		}
 	}()
 }
 
 func main() {
-	ctxParent, cancel := context.WithTimeout(context.Background(), 3*time.Second)
-	defer cancel()
+	ctxParent := context.Background()
 	// set tracer
 	tracerInit(ctxParent)
 	tracer := otel_sdk.Tracer(TracerName)
@@ -93,9 +96,16 @@ func main() {
 	}()
 	// start grpc server
 	wg.Add(1)
-	go func() {
+	go func(ctx context.Context) {
 		defer wg.Done()
 		grpcServer := grpc.NewServer()
+		go func() {
+			select {
+			case <-ctx.Done():
+				grpcServer.GracefulStop()
+				log.Println("gRPC server stopped gracefully")
+			}
+		}()
 		userHandlerGrpc := grpchandler.NewUserHandler(userUseCase, tracer, meter)
 		userpb.RegisterUserServer(grpcServer, userHandlerGrpc)
 		reflection.Register(grpcServer)
@@ -106,6 +116,6 @@ func main() {
 		if err = grpcServer.Serve(lis); err != nil {
 			log.Fatalf("failed to serve: %v", err)
 		}
-	}()
+	}(ctxParent)
 	wg.Wait()
 }

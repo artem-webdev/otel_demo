@@ -6,6 +6,7 @@ import (
 	"github.com/artem-webdev/otel_demo/internal/controller/http_ctrl/handler"
 	"github.com/gofiber/fiber/v2"
 	"log"
+	"strings"
 	"time"
 )
 
@@ -32,14 +33,17 @@ func (s *HttpServer) route() {
 
 func (s *HttpServer) Run(ctx context.Context, addr string) error {
 	if ctx == nil {
-		return errors.New("nil context NewHttpServer.inRun")
+		return errors.New("nil context in NewHttpServer.run ")
 	}
 	s.route()
 	go func() {
 		select {
 		case <-ctx.Done():
-			if err := s.App.Shutdown(); err != nil {
-				log.Println(err)
+			ctx.Err().Error()
+			if err := s.App.ShutdownWithContext(ctx); err != nil {
+				if !strings.Contains(err.Error(), "context") {
+					log.Printf("failed to shutdown shutdownMeterProvider: %s", err)
+				}
 			}
 		}
 	}()
