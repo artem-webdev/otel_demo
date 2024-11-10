@@ -4,6 +4,8 @@
 нужно выполнить
 команды
 
+1111
+
 ```bash
 cd deployments
 docker compose up -d
