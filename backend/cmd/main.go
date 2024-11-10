@@ -14,8 +14,11 @@ import (
 	"google.golang.org/grpc/reflection"
 	"log"
 	"net"
+	"os"
+	"os/signal"
 	"strings"
 	"sync"
+	"syscall"
 )
 
 const (
@@ -72,8 +75,18 @@ func metricInit(ctx context.Context) {
 	}()
 }
 
+func gracefulShutdown(cancel context.CancelFunc) {
+	quit := make(chan os.Signal, 1)
+	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
+	<-quit
+	log.Println("Shutting down...")
+	cancel()
+	log.Println("Shutting down done")
+}
+
 func main() {
-	ctxParent := context.Background()
+	ctxParent, cancel := context.WithCancel(context.Background())
+	go gracefulShutdown(cancel)
 	// set tracer
 	tracerInit(ctxParent)
 	tracer := otel_sdk.Tracer(TracerName)
