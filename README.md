@@ -1,5 +1,7 @@
 # Запуск
 
+Для запуска нужно выполнить команды
+
 ```bash
 cd deployments
 docker compose up -d
