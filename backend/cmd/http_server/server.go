@@ -37,10 +37,15 @@ func (s *HttpServer) Run(ctx context.Context, addr string) error {
 	}
 	s.route()
 	go func() {
+		var err error
+		defer func() {
+			if err == nil {
+				log.Println("http server stopped gracefully")
+			}
+		}()
 		select {
 		case <-ctx.Done():
-			ctx.Err().Error()
-			if err := s.App.ShutdownWithContext(ctx); err != nil {
+			if err = s.App.ShutdownWithContext(ctx); err != nil {
 				if !strings.Contains(err.Error(), "context") {
 					log.Printf("failed to shutdown shutdownMeterProvider: %s", err)
 				}
