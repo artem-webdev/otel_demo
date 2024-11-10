@@ -15,15 +15,17 @@ import (
 	"log"
 	"net"
 	"sync"
+	"time"
 )
 
 const (
-	HttpServerAddr    = "0.0.0.0:7777"
-	GrpcServerAddr    = "0.0.0.0:50057"
-	TracerName        = "otel-collector"
-	MeterName         = "otel-collector"
-	ServiceName       = "otel-demo-service"
-	AddrGrpcCollector = "otel-collector:4320"
+	HttpServerAddr = "0.0.0.0:7777"
+	GrpcServerAddr = "0.0.0.0:50057"
+	TracerName     = "otel-collector"
+	MeterName      = "otel-collector"
+	ServiceName    = "otel-demo-service"
+	//AddrGrpcCollector = "otel-collector:4320"
+	AddrGrpcCollector = "0.0.0.0:4320"
 )
 
 func tracerInit(ctx context.Context) {
@@ -39,8 +41,8 @@ func tracerInit(ctx context.Context) {
 	go func() {
 		select {
 		case <-ctx.Done():
-			if err = shutdownTracerProvider(ctx); err != nil {
-				log.Fatalf("failed to shutdown TracerProvider: %s", err)
+			if err = shutdownTracerProvider(context.Background()); err != nil {
+				log.Printf("failed to shutdown shutdownTracerProvider: %s", err)
 			}
 		}
 	}()
@@ -59,15 +61,16 @@ func metricInit(ctx context.Context) {
 	go func() {
 		select {
 		case <-ctx.Done():
-			if err = shutdownMeterProvider(ctx); err != nil {
-				log.Fatalf("failed to shutdown TracerProvider: %s", err)
+			if err = shutdownMeterProvider(context.Background()); err != nil {
+				log.Printf("failed to shutdown shutdownMeterProvider: %s", err)
 			}
 		}
 	}()
 }
 
 func main() {
-	ctxParent := context.Background()
+	ctxParent, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
 	// set tracer
 	tracerInit(ctxParent)
 	tracer := otel_sdk.Tracer(TracerName)

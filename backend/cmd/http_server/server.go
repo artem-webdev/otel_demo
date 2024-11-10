@@ -2,6 +2,7 @@ package http_server
 
 import (
 	"context"
+	"errors"
 	"github.com/artem-webdev/otel_demo/internal/controller/http_ctrl/handler"
 	"github.com/gofiber/fiber/v2"
 	"log"
@@ -31,12 +32,15 @@ func (s *HttpServer) route() {
 
 func (s *HttpServer) Run(ctx context.Context, addr string) error {
 	if ctx == nil {
-		ctx = context.Background()
+		return errors.New("nil context NewHttpServer.inRun")
 	}
 	s.route()
 	go func() {
-		if err := s.App.ShutdownWithContext(ctx); err != nil {
-			log.Println(err)
+		select {
+		case <-ctx.Done():
+			if err := s.App.Shutdown(); err != nil {
+				log.Println(err)
+			}
 		}
 	}()
 	if err := s.App.Listen(addr); err != nil {
